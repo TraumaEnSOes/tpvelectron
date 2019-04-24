@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Haramain</title>
+    <link rel="stylesheet" type="text/css" href="webix.css">
+  </head>
+  <body>
+    <script src="webix.js" charset="UTF-8"></script>
+    <script>
+function OnSendClick( ) {
+  let data = JSON.stringify( {
+    hz: $$( 'HZ' ).getValue( ),
+    ms: $$( 'MS' ).getValue( )
+  } );
+
+  webix.ajax( ).headers( { 'Content-type': 'application/json' } ).post( `${Indra.DocumentRoot}beep`, data, OnAjaxResponse );
+}
+
+function OnAjaxResponse( text, data, xhr ) {
+  if( xhr.status != 200 ) webix.message( { type: 'error', text: `POST error: ${xhr.status}` } );
+}
+
+function OnMessageReceived( msg ) {
+  $$( 'LIST' ).add( msg );
+}
+
+function OnPageReady( ) {
+  var layout = {
+    rows: [
+      { },
+      { view: 'slider', id: 'HZ', label: 'Frecuencia', labelPosition: 'top', value: 1, min: 1, max: 9 },
+      { view: 'slider', id: 'MS', label: 'Duración', labelPosition: 'top', value: 1, min: 1, max: 9 },
+      { },
+      { cols: [ { }, { view: 'button', tipe: 'form', width: 127, value: 'Enviar', click: OnSendClick }, { } ] },
+      { },
+      { view: 'list', id: 'LIST', height: 300, template: '#data#' }
+    ]
+  };
+
+  webix.ui( layout );
+}
+
+webix.ready( function( ) {
+  ( new EventSource( `${Indra.DocumentRoot}events` ) ).onmessage = OnMessageReceived;
+  OnPageReady( );
+} );
+    </script>
+  </body>
+</html>
